@@ -8,6 +8,6 @@ from app import app
 
 def index():
 
-	return render_template('fbd_webmap.html')
+	return render_template('fbd_resource_map.html')
 
 
