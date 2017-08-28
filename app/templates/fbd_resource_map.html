@@ -73,20 +73,13 @@
       "esri/widgets/Home",
       "esri/widgets/Compass",
       "esri/widgets/ScaleBar",
+      "esri/widgets/Search",
       "dojo/domReady!"
     ], function(
-      Map, MapView, GroupLayer, FeatureLayer, LayerList, BasemapToggle, Compass, Home, ScaleBar
+      Map, MapView, GroupLayer, FeatureLayer, LayerList, BasemapToggle, Compass, Home, ScaleBar, Search
     ) {
 
-      // Create layer showing household income.
-
-      var householdIncomeLayer = new FeatureLayer({
-        url: "https://services6.arcgis.com/VWg6bM7M20Uy0LUO/arcgis/rest/services/sites_gjson/FeatureServer/0",
-        title: "sites"
-      });
-
-      // Create layer showing median net worth.
-      // Set visible to false so it's not visible on startup.
+      // Create layer for FBD warehouse locations
 
       var warehouses = new FeatureLayer({
         url: "https://services6.arcgis.com/VWg6bM7M20Uy0LUO/arcgis/rest/services/warehouses/FeatureServer/0",
@@ -131,91 +124,89 @@
       });
 
       //-----------------------------------------------------------//
-      // Create need layers
+      // Create SNAP resource layers
 
-      // Create poverty by zipcode layer
-      var povertyLayer = new FeatureLayer({
-        url: "https://services3.arcgis.com/amVpls9Mj8wDvAbS/arcgis/rest/services/poverty_rate/FeatureServer/0",
-        title: "Poverty Rate",
+      // Create farmers markets layer
+      var snapFarmersMarkets = new FeatureLayer({
+        url: "https://services3.arcgis.com/amVpls9Mj8wDvAbS/arcgis/rest/services/SNAP_farmers_markets/FeatureServer/0",
+        title: "SNAP Farmers Markets",
         visible: true
       });
 
-      // Create food insecurity rate layer
-      var foodInsecurity = new FeatureLayer({
-        url: "https://services3.arcgis.com/amVpls9Mj8wDvAbS/arcgis/rest/services/FI_rate/FeatureServer/0",
-        title: "Food Insecurity Rate",
-        visible: false
-      });
-    
-
-      // Create SNAP eligibility rate layer
-      var snapEligibility = new FeatureLayer({
-        url: "https://services3.arcgis.com/amVpls9Mj8wDvAbS/arcgis/rest/services/SNAP_eligibility/FeatureServer/0",
-        title: "SNAP Eligibility",
-        visible: false
+      // Create retailers layer
+      var snapRetailers = new FeatureLayer({
+        url: "https://services3.arcgis.com/amVpls9Mj8wDvAbS/arcgis/rest/services/SNAP_retailers/FeatureServer/0",
+        title: "SNAP Retailers",
+        visible: true
       });
 
-      // Create SNAP participation layer
-      var snapEnrollment = new FeatureLayer({
-        url: "https://services3.arcgis.com/amVpls9Mj8wDvAbS/arcgis/rest/services/SNAP_enrollment/FeatureServer/0",
-        title: "SNAP Enrollment",
-        visible: false
+      // Create GroupLayer for need layers
+      var snapLayers = new GroupLayer({
+        title: "SNAP Resources",
+        visible: true,
+        visibilityMode: "exclusive",
+        layers: [snapFarmersMarkets, snapRetailers],
+        opacity: 0.75
       });
 
-      // Create SNAP participation layer
-      var totalMealGap = new FeatureLayer({
-        url: "https://services3.arcgis.com/amVpls9Mj8wDvAbS/arcgis/rest/services/total_meal_gap/FeatureServer/0",
-        title: "Total Meal Gap",
-        visible: false
+      //-----------------------------------------------------------//
+      // Create WIC resource layers
+
+      // Create poverty by zipcode layer
+      var wicFarmersMarkets = new FeatureLayer({
+        url: "https://services3.arcgis.com/amVpls9Mj8wDvAbS/arcgis/rest/services/WIC_farmers_market/FeatureServer/0",
+        title: "WIC Farmers Markets",
+        visible: true
       });
 
-      // Create SNAP participation layer
-      var medIncome = new FeatureLayer({
-        url: "https://services3.arcgis.com/amVpls9Mj8wDvAbS/arcgis/rest/services/median_income/FeatureServer/0",
-        title: "Median Household Income",
-        visible: false
+
+      // Create reatilers layer
+      var wicRetailers = new FeatureLayer({
+        url: "https://services3.arcgis.com/amVpls9Mj8wDvAbS/arcgis/rest/services/WIC_retailers/FeatureServer/0",
+        title: "WIC Retailers",
+        visible: true
       });
 
       //TEMP: placeholder for unmet meal gap layer
 
       // Create GroupLayer for need layers
-      var needLayers = new GroupLayer({
-        title: "The Need",
+      var wicLayers = new GroupLayer({
+        title: "WIC Resources",
         visible: true,
         visibilityMode: "exclusive",
-        layers: [totalMealGap, snapEnrollment, snapEligibility, foodInsecurity, medIncome,   povertyLayer],
+        layers: [wicFarmersMarkets, wicRetailers],
         opacity: 0.75
       });
 
 
       //-----------------------------------------------------------//
-      // Create Impact layers
+      // Create FBD resource Layers
 
       // Create school pantries layer
       var schoolPantries = new FeatureLayer({
         url: "https://services3.arcgis.com/amVpls9Mj8wDvAbS/arcgis/rest/services/schoolpantries/FeatureServer/0",
-        title: "School Pantries",
+        title: "School Pantry Sites",
         visible: false
       });
 
       // Create CACFP layer
       var afterSchool = new FeatureLayer({
         url: "https://services3.arcgis.com/amVpls9Mj8wDvAbS/arcgis/rest/services/afterschool_meals_template/FeatureServer/0",
-        title: "Afterschool Meals",
+        title: "Afterschool Meal Sites",
         visible: false
       });
 
       // Create CACFP layer
       var summerMeals = new FeatureLayer({
         url: "https://services3.arcgis.com/amVpls9Mj8wDvAbS/arcgis/rest/services/summer_meals_template/FeatureServer/0",
-        title: "Summer Meals",
+        title: "Summer Meal Sites",
         visible: false
       });
 
       // Create CACFP layer
       var backpacks = new FeatureLayer({
         url: "https://services3.arcgis.com/amVpls9Mj8wDvAbS/arcgis/rest/services/backpacks_template/FeatureServer/0",
-        title: "Backpack Program",
+        title: "Backpack Program Sites",
         visible: false
       });
 
@@ -232,62 +223,45 @@
 
       var seniorMeals = new FeatureLayer({
         url: "https://services3.arcgis.com/amVpls9Mj8wDvAbS/arcgis/rest/services/seniormeals/FeatureServer/0",
-        title: "Senior Meals",
+        title: "Senior Meal Sites",
         visible: false
       });
 
 
       var mobilePantry = new FeatureLayer({
         url: "https://services3.arcgis.com/amVpls9Mj8wDvAbS/arcgis/rest/services/mobilepantries/FeatureServer/0",
-        title: "Mobile Pantry",
+        title: "Mobile Pantry Sites",
         visible: false
       });
 
 
       // Create GroupLayer for Hunger Relief efforts layers
-      var hungerRelief = new GroupLayer({
-        title: "Hunger Relief",
+      var fbdLayers = new GroupLayer({
+        title: "FBD Resources",
         visible: true,
         visibilityMode: "independent",
-        layers: [mobilePantry, seniorMeals, childrensNutrition],
+        layers: [childrensNutrition, mobilePantry, seniorMeals],
         opacity: 0.75
       });
 
 
-      // Create WIC ed layer
-      var wicEd = new FeatureLayer({
-        url: "https://services3.arcgis.com/amVpls9Mj8wDvAbS/arcgis/rest/services/wic_ed/FeatureServer/0",
-        title: "WIC Eductation",
-        visible: false
-      });
 
-      // Create SNAP outreach layer
-      var snapOutreach = new FeatureLayer({
-        url: "https://services3.arcgis.com/amVpls9Mj8wDvAbS/arcgis/rest/services/snap_outreach_by_zip/FeatureServer/0",
-        title: "SNAP Outreach",
+
+
+      // Create GroupLayer for Hunger Relief Partners efforts layers
+      var foodClosets = new FeatureLayer({
+        url: "https://services3.arcgis.com/amVpls9Mj8wDvAbS/arcgis/rest/services/foodclosets/FeatureServer/0",
+        title: "Food Closets",
         visible: false
       });
 
 
-      // Create GroupLayer for Hunger Relief efforts layers
-      var educationOutreach = new GroupLayer({
-        title: "Education & Outreach",
-        visible: true,
-        visibilityMode: "exlcusive",
-        layers: [wicEd],
-        opacity: 0.75
+      // Create GroupLayer for Hunger Relief Partners efforts layers
+      var soupKitchens = new FeatureLayer({
+        url: "https://services3.arcgis.com/amVpls9Mj8wDvAbS/arcgis/rest/services/soupkitchens/FeatureServer/0",
+        title: "Soup Kitchens",
+        visible: false
       });
-
-     
-      // Create GroupLayer for impact layers
-      var impactLayers = new GroupLayer({
-        title: "Our Impact",
-        visible: true,
-        visibilityMode: "independent",
-        layers: [educationOutreach, hungerRelief],
-        opacity: 0.75
-      });
-
 
 
 
@@ -295,7 +269,7 @@
 
       var map = new Map({
         basemap: "streets",
-        layers: [impactLayers, needLayers, geographicBoundaries]
+        layers: [fbdLayers, soupKitchens, foodClosets, wicLayers, snapLayers]
       });
 
       // Add the map to a MapView
@@ -353,10 +327,24 @@
 
       view.then(function() {
 
+        //create and add the search bar widget
+        var searchWidget = new Search({
+          view: view
+
+        });
+
+        // Adds the search widget below other elements in
+        // the top left corner of the view
+        view.ui.add(searchWidget, {
+          index: 2,
+          position: "top-right"
+
+        });
         
         // Create the LayerList widget with the associated actions
         // and add it to the top-right corner of the view.
 
+        
         var layerList = new LayerList({
           view: view,
           // executes for each ListItem in the LayerList to format buttons
@@ -451,6 +439,7 @@
           position: "bottom-left"
         });
         
+        
       });
       
     });
@@ -466,7 +455,7 @@
       </a>
     </div>
     <div id="textbox">    </div>
-      <div id="text">Nutrition Resource Map</div>
+      <div id="text">Delaware Nutrition Resource Map</div>
   </div>
   <div id="viewDiv">
   </div>
