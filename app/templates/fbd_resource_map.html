@@ -3,11 +3,12 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
-  <title>Food Bank of Delaware - Mapping our Impact</title>
+  <title>Food Bank of Delaware - Nutrition Resource Map</title>
   <style>
     html,
     body,
     #viewDiv {
+      position: fixed;
       padding-top: 20px;
       padding-left: 0;
       height: 98%;
@@ -27,24 +28,30 @@
 
     }
 
-    #text {
-      height: 20px;
+    #textbox {
+      height: 10px;
+      margin-bottom: 20px;
       display: inline-block;
       color: #036954;
       font:22px impact, sans-serif;
+    }
 
+    #text {
+      display: inline-block;
+      color: #036954;
+      font:22px impact, sans-serif;
     }
     
-    #logo {
-      height: 40px;
+    #logobox {
+      height: 30px;
       display: inline-block;
       position: middle;
-      padding: 0;
+      padding-left: 10px;
       margin: 0;
       margin-right: 20px;
       margin-left: 20px;
       padding-top: 5px;
-      padding-bottom: 0;
+      padding-bottom: 10;
     }
     
     body {
@@ -79,12 +86,12 @@
       });
 
       // Create layer showing median net worth.
-      // Set visibility to false so it's not visible on startup.
+      // Set visible to false so it's not visible on startup.
 
-      var medianNetWorthLayer = new FeatureLayer({
+      var warehouses = new FeatureLayer({
         url: "https://services6.arcgis.com/VWg6bM7M20Uy0LUO/arcgis/rest/services/warehouses/FeatureServer/0",
-        title: "warehouses",
-        visibility: false
+        title: "Warehouses",
+        visible: true
       });
       
      
@@ -96,28 +103,28 @@
       var zipcodeBoundaries = new FeatureLayer({
         url: "https://services3.arcgis.com/amVpls9Mj8wDvAbS/arcgis/rest/services/de_zipcodes/FeatureServer/0",
         title: "Zipcode Areas",
-        visibility: false
+        visible: false
       });
 
       // Create zipcode boundaries layer
       var countyBoundaries = new FeatureLayer({
         url: "https://services3.arcgis.com/amVpls9Mj8wDvAbS/arcgis/rest/services/de_counties/FeatureServer/0",
         title: "County Boundaries",
-        visibility: false
+        visible: false
       });
 
       // Create legislative districst boundaries layer
       var legislativeDistricts = new FeatureLayer({
         url: "https://services3.arcgis.com/amVpls9Mj8wDvAbS/arcgis/rest/services/legislative_districts/FeatureServer",
         title: "Legislative Districts",
-        visibility: false
+        visible: false
       });
 
       // Create GroupLayer for geographic layers
       
       var geographicBoundaries = new GroupLayer({
         title: "Geographic Layers",
-        visibility: true,
+        visible: true,
         visibilityMode: "independent",
         layers: [zipcodeBoundaries, countyBoundaries, legislativeDistricts],
         opacity: 0.75
@@ -130,14 +137,14 @@
       var povertyLayer = new FeatureLayer({
         url: "https://services3.arcgis.com/amVpls9Mj8wDvAbS/arcgis/rest/services/poverty_rate/FeatureServer/0",
         title: "Poverty Rate",
-        visibility: false
+        visible: true
       });
 
       // Create food insecurity rate layer
       var foodInsecurity = new FeatureLayer({
         url: "https://services3.arcgis.com/amVpls9Mj8wDvAbS/arcgis/rest/services/FI_rate/FeatureServer/0",
         title: "Food Insecurity Rate",
-        visibility: false
+        visible: false
       });
     
 
@@ -145,21 +152,28 @@
       var snapEligibility = new FeatureLayer({
         url: "https://services3.arcgis.com/amVpls9Mj8wDvAbS/arcgis/rest/services/SNAP_eligibility/FeatureServer/0",
         title: "SNAP Eligibility",
-        visibility: false
+        visible: false
       });
 
       // Create SNAP participation layer
       var snapEnrollment = new FeatureLayer({
         url: "https://services3.arcgis.com/amVpls9Mj8wDvAbS/arcgis/rest/services/SNAP_enrollment/FeatureServer/0",
         title: "SNAP Enrollment",
-        visibility: false
+        visible: false
       });
 
       // Create SNAP participation layer
       var totalMealGap = new FeatureLayer({
         url: "https://services3.arcgis.com/amVpls9Mj8wDvAbS/arcgis/rest/services/total_meal_gap/FeatureServer/0",
         title: "Total Meal Gap",
-        visibility: false
+        visible: false
+      });
+
+      // Create SNAP participation layer
+      var medIncome = new FeatureLayer({
+        url: "https://services3.arcgis.com/amVpls9Mj8wDvAbS/arcgis/rest/services/median_income/FeatureServer/0",
+        title: "Median Household Income",
+        visible: false
       });
 
       //TEMP: placeholder for unmet meal gap layer
@@ -167,9 +181,9 @@
       // Create GroupLayer for need layers
       var needLayers = new GroupLayer({
         title: "The Need",
-        visibility: true,
-        visibilityMode: "independent",
-        layers: [totalMealGap, snapEnrollment, snapEligibility, foodInsecurity, povertyLayer],
+        visible: true,
+        visibilityMode: "exclusive",
+        layers: [totalMealGap, snapEnrollment, snapEligibility, foodInsecurity, medIncome,   povertyLayer],
         opacity: 0.75
       });
 
@@ -181,33 +195,86 @@
       var schoolPantries = new FeatureLayer({
         url: "https://services3.arcgis.com/amVpls9Mj8wDvAbS/arcgis/rest/services/schoolpantries/FeatureServer/0",
         title: "School Pantries",
-        visibility: false
+        visible: false
       });
 
       // Create CACFP layer
-      var afterschoolMeals = new FeatureLayer({
-        url: "https://services3.arcgis.com/amVpls9Mj8wDvAbS/arcgis/rest/services/afterschool_meals/FeatureServer/0",
+      var afterSchool = new FeatureLayer({
+        url: "https://services3.arcgis.com/amVpls9Mj8wDvAbS/arcgis/rest/services/afterschool_meals_template/FeatureServer/0",
         title: "Afterschool Meals",
-        visibility: false
+        visible: false
+      });
+
+      // Create CACFP layer
+      var summerMeals = new FeatureLayer({
+        url: "https://services3.arcgis.com/amVpls9Mj8wDvAbS/arcgis/rest/services/summer_meals_template/FeatureServer/0",
+        title: "Summer Meals",
+        visible: false
+      });
+
+      // Create CACFP layer
+      var backpacks = new FeatureLayer({
+        url: "https://services3.arcgis.com/amVpls9Mj8wDvAbS/arcgis/rest/services/backpacks_template/FeatureServer/0",
+        title: "Backpack Program",
+        visible: false
       });
 
 
       // Create GroupLayer for Children's nutrition programs layers
       var childrensNutrition = new GroupLayer({
         title: "Children's Nutrition Programs",
-        visibility: true,
+        visible: true,
         visibilityMode: "independent",
-        layers: [schoolPantries],
+        layers: [backpacks, summerMeals, afterSchool, schoolPantries],
         opacity: 0.75
+      });
+
+
+      var seniorMeals = new FeatureLayer({
+        url: "https://services3.arcgis.com/amVpls9Mj8wDvAbS/arcgis/rest/services/seniormeals/FeatureServer/0",
+        title: "Senior Meals",
+        visible: false
+      });
+
+
+      var mobilePantry = new FeatureLayer({
+        url: "https://services3.arcgis.com/amVpls9Mj8wDvAbS/arcgis/rest/services/mobilepantries/FeatureServer/0",
+        title: "Mobile Pantry",
+        visible: false
       });
 
 
       // Create GroupLayer for Hunger Relief efforts layers
       var hungerRelief = new GroupLayer({
         title: "Hunger Relief",
-        visibility: true,
+        visible: true,
         visibilityMode: "independent",
-        layers: [childrensNutrition],
+        layers: [mobilePantry, seniorMeals, childrensNutrition],
+        opacity: 0.75
+      });
+
+
+      // Create WIC ed layer
+      var wicEd = new FeatureLayer({
+        url: "https://services3.arcgis.com/amVpls9Mj8wDvAbS/arcgis/rest/services/wic_ed/FeatureServer/0",
+        title: "WIC Eductation",
+        visible: false
+      });
+
+      // Create SNAP outreach layer
+      var snapOutreach = new FeatureLayer({
+        url: "https://services3.arcgis.com/amVpls9Mj8wDvAbS/arcgis/rest/services/snap_outreach_by_zip/FeatureServer/0",
+        title: "SNAP Outreach",
+        visible: false
+      });
+
+
+      // Create GroupLayer for Hunger Relief efforts layers
+      var educationOutreach = new GroupLayer({
+        title: "Education & Outreach",
+        visible: true,
+        visibilityMode: "exlcusive",
+        layers: [wicEd],
         opacity: 0.75
       });
 
@@ -215,18 +282,20 @@
       // Create GroupLayer for impact layers
       var impactLayers = new GroupLayer({
         title: "Our Impact",
-        visibility: true,
+        visible: true,
         visibilityMode: "independent",
-        layers: [hungerRelief],
+        layers: [educationOutreach, hungerRelief],
         opacity: 0.75
       });
+
+
 
 
       // Create a map and add the group layer to it
 
       var map = new Map({
         basemap: "streets",
-        layers: [hungerRelief, needLayers, geographicBoundaries]
+        layers: [impactLayers, needLayers, geographicBoundaries]
       });
 
       // Add the map to a MapView
@@ -246,7 +315,7 @@
 
         // The event object contains an item property.
         // is is a ListItem referencing the associated layer
-        // and other properties. You can control the visibility of the
+        // and other properties. You can control the visible of the
         // item, its title, and actions using this object.
 
         var item = event.item;
@@ -390,15 +459,14 @@
 
 <body>
   <div id="navbar">
-    <div id="text">
-      <a href="www.fbd.org" style="text-decoration:none">
+    <div id="logobox">
+      <a href="http://www.fbd.org" style="text-decoration:none">
         <img id="logo" alt="logo" 
-        src="https://castellanicreative.files.wordpress.com/2013/12/food-bank-logo.jpg" height="38" 
-        width="68">
+        src="https://castellanicreative.files.wordpress.com/2013/12/food-bank-logo.jpg" height="38" width="68">
       </a>
     </div>
-    <div id="text">    </div>
-    <div id="text">Mapping Our Impact</div>
+    <div id="textbox">    </div>
+      <div id="text">Nutrition Resource Map</div>
   </div>
   <div id="viewDiv">
   </div>
